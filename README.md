@@ -42,6 +42,9 @@ npm run dev
 
 - Frontend: [http://localhost:3000](http://localhost:3000)
 - Backend: [http://localhost:3001](http://localhost:3001)
+- Health check: [http://localhost:3001/health](http://localhost:3001/health)
+
+No `.env` setup is required for local development — see [Intentional configuration choices](#intentional-configuration-choices) below.
 
 ## Scripts
 
@@ -65,10 +68,29 @@ npm run dev
 | `npm run test:e2e`   | End-to-end tests      |
 | `npm run lint`       | Run ESLint            |
 
+## API endpoints
+
+| Method | Path               | Description              |
+| ------ | ------------------ | ------------------------ |
+| GET    | `/health`          | Service health check     |
+| GET    | `/geocode?q=`      | Search locations         |
+| GET    | `/weather/current` | Current weather (`lat`, `lon`) |
+| GET    | `/weather/forecast`| 5-day forecast (`lat`, `lon`) |
+
 ## Environment variables
 
-Create `.env` files in each app as needed. Env files are gitignored by default.
+Optional. Only `PORT` is read from the environment today.
 
 | Variable | App     | Default | Description |
 | -------- | ------- | ------- | ----------- |
 | `PORT`   | backend | `3001`  | API port    |
+
+## Intentional configuration choices
+
+This project is set up for easy local evaluation — clone, install, run. A few values are **hardcoded on purpose** rather than hidden behind env files:
+
+| Setting | Location | Value | Why |
+| ------- | -------- | ----- | --- |
+| OpenWeather API key | `backend/src/weather/weather.service.ts` | Included in source | Reviewers can run the backend with zero config. In production, this would move to a server-side env var (e.g. `OPENWEATHER_API_KEY`) and never ship in git. |
+| Backend URL | `frontend/lib/api.ts` | `http://localhost:3001` | Matches the default local API port. In production, this would become something like `NEXT_PUBLIC_API_URL` per deploy environment. |
+
