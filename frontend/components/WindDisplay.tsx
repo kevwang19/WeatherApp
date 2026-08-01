@@ -58,7 +58,7 @@ export default function WindDisplay({
         align === "end" ? "justify-end" : ""
       } ${className}`}
     >
-      <span>Wind: {Math.round(speed)} mph</span>
+      <span>{Math.round(speed)} mph wind</span>
       {degrees !== undefined && (
         <span className="inline-flex items-center gap-0.5">
           <WindArrow degrees={degrees} />
