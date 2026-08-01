@@ -16,11 +16,16 @@ Full-stack weather application.
 
 ## Getting started
 
-Install dependencies in each app:
+Install dependencies in each app (run from the project root):
 
 ```bash
-cd backend && npm install
-cd ../frontend && npm install
+# Backend
+cd backend
+npm install
+
+# Frontend
+cd frontend
+npm install
 ```
 
 Run both in separate terminals:
