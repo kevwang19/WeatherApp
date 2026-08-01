@@ -5,6 +5,8 @@ const OPENWEATHER_DATA_URL = 'https://api.openweathermap.org/data/2.5';
 const OPENWEATHER_GEO_URL = 'https://api.openweathermap.org/geo/1.0';
 const DEFAULT_UNITS = 'imperial';
 
+// constants and api keys explicitly included in this file for simplicity... in production the api keys would live as environment variables, the constants can be env vars or hardcoded depending on how often it is used
+
 export interface GeocodeResult {
   name: string;
   lat: number;
