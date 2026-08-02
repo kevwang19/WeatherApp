@@ -40,6 +40,13 @@ function formatTime(unix: number) {
   });
 }
 
+function formatForecastDay(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString([], {
+    weekday: "short",
+  });
+}
+
 function formatDateTime(unix: number) {
   return new Date(unix * 1000).toLocaleString([], {
     weekday: "short",
@@ -48,6 +55,32 @@ function formatDateTime(unix: number) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function rollupDailyForecast(
+  forecastIntervals: Forecast["list"],
+  cityTimezoneOffsetSeconds = 0,
+) {
+  const forecastsGroupedByDay = new Map<string, Forecast["list"]>();
+
+  for (const interval of forecastIntervals) {
+    const timestampSeconds = interval.dt;
+    const localDateTime = new Date((timestampSeconds + cityTimezoneOffsetSeconds) * 1000);
+    const calendarDate = `${localDateTime.getUTCFullYear()}-${localDateTime.getUTCMonth() + 1}-${localDateTime.getUTCDate()}`;
+    const intervalsForDay = forecastsGroupedByDay.get(calendarDate) ?? [];
+    intervalsForDay.push(interval);
+    forecastsGroupedByDay.set(calendarDate, intervalsForDay);
+  }
+
+  return Array.from(forecastsGroupedByDay.entries()).map(
+    ([calendarDate, intervalsForDay]) => ({
+      date: calendarDate,
+      tempHigh: Math.max(...intervalsForDay.map((interval) => interval.main.temp)),
+      tempLow: Math.min(...intervalsForDay.map((interval) => interval.main.temp)),
+      maxPop: Math.max(...intervalsForDay.map((interval) => interval.pop)),
+      icon: intervalsForDay[0].weather[0].icon,
+    }),
+  );
 }
 
 export default function Home() {
@@ -231,10 +264,40 @@ export default function Home() {
       )}
 
       {!loading && tab === "forecast" && forecast && (
-        <section className="space-y-2">
-          <p className="text-sm text-zinc-500">3-hour intervals · next 5 days</p>
-          <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-            {forecast.list.map((entry) => (
+        <section className="space-y-4">
+          <div>
+            <p className="mb-2 text-sm text-zinc-500">Daily summary</p>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {rollupDailyForecast(
+                forecast.list,
+                forecast.city.timezone,
+              ).map((dailySummary) => (
+                <div
+                  key={dailySummary.date}
+                  className="flex min-w-24 shrink-0 flex-col items-center gap-1 rounded-lg border border-zinc-200 px-2 py-3 text-center text-sm dark:border-zinc-800"
+                >
+                  <p className="font-medium">
+                    {formatForecastDay(dailySummary.date)}
+                  </p>
+                  <WeatherIcon code={dailySummary.icon} size={36} />
+                  <p>
+                    {Math.round(dailySummary.tempHigh)}° /{" "}
+                    {Math.round(dailySummary.tempLow)}°
+                  </p>
+                  <p className="text-zinc-500">
+                    {Math.round(dailySummary.maxPop * 100)}% rain
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm text-zinc-500">
+              3 hour intervals over next 5 days
+            </p>
+            <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+              {forecast.list.map((entry) => (
               <li
                 key={entry.dt}
                 className="flex items-center gap-3 px-3 py-3 text-sm"
@@ -259,7 +322,8 @@ export default function Home() {
                 </div>
               </li>
             ))}
-          </ul>
+            </ul>
+          </div>
         </section>
       )}
     </main>

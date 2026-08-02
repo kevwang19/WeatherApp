@@ -25,7 +25,7 @@ export interface CurrentWeather {
 }
 
 export interface Forecast {
-  city: { name: string; country: string };
+  city: { name: string; country: string; timezone?: number };
   list: Array<{
     dt: number;
     main: { temp: number; feels_like: number };
