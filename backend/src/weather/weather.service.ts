@@ -15,6 +15,14 @@ export interface GeocodeResult {
   state?: string;
 }
 
+interface OpenWeatherGeocodeItem {
+  name: string;
+  lat: number;
+  lon: number;
+  country: string;
+  state?: string;
+}
+
 /** Proxies geocoding and weather requests to the OpenWeather API. */
 @Injectable()
 export class WeatherService {
@@ -32,7 +40,7 @@ export class WeatherService {
         throw new Error(String(response.status));
       }
 
-      const results = await response.json();
+      const results = (await response.json()) as OpenWeatherGeocodeItem[];
       // Trim the upstream payload to the fields the frontend needs.
       return results.map(({ name, lat, lon, country, state }) => ({
         name,
@@ -48,7 +56,7 @@ export class WeatherService {
   }
 
   /** Fetch current conditions; units default to imperial (°F, mph). */
-  async getCurrentWeather(lat: number, lon: number) {
+  async getCurrentWeather(lat: number, lon: number): Promise<unknown> {
     const url = new URL(`${OPENWEATHER_DATA_URL}/weather`);
     url.searchParams.set('lat', String(lat));
     url.searchParams.set('lon', String(lon));
@@ -62,7 +70,8 @@ export class WeatherService {
         throw new Error(String(response.status));
       }
 
-      return response.json();
+      const data: unknown = await response.json();
+      return data;
     } catch (error) {
       console.error('OpenWeather request failed', error);
       throw new BadGatewayException('OpenWeather request failed');
@@ -70,7 +79,7 @@ export class WeatherService {
   }
 
   /** Fetch 5-day / 3-hour forecast; units default to imperial. */
-  async getForecast(lat: number, lon: number) {
+  async getForecast(lat: number, lon: number): Promise<unknown> {
     const url = new URL(`${OPENWEATHER_DATA_URL}/forecast`);
     url.searchParams.set('lat', String(lat));
     url.searchParams.set('lon', String(lon));
@@ -84,7 +93,8 @@ export class WeatherService {
         throw new Error(String(response.status));
       }
 
-      return response.json();
+      const data: unknown = await response.json();
+      return data;
     } catch (error) {
       console.error('OpenWeather request failed', error);
       throw new BadGatewayException('OpenWeather request failed');

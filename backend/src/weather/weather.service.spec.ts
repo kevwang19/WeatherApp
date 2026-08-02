@@ -33,15 +33,16 @@ describe('WeatherService', () => {
     // Simulate OpenWeather returning a full payload
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => [
-        {
-          name: 'Boston',
-          lat: 42.36,
-          lon: -71.06,
-          country: 'US',
-          state: 'MA',
-        },
-      ],
+      json: () =>
+        Promise.resolve([
+          {
+            name: 'Boston',
+            lat: 42.36,
+            lon: -71.06,
+            country: 'US',
+            state: 'MA',
+          },
+        ]),
     });
 
     // Our service should strip/map to only the fields we expose
@@ -63,7 +64,7 @@ describe('WeatherService', () => {
     const payload = { name: 'Boston', main: { temp: 72 } };
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => payload,
+      json: () => Promise.resolve(payload),
     });
 
     // Happy path: upstream JSON passes through unchanged
