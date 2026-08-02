@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Main weather page — location search, tabbed current/forecast views,
+ * and all client-side data fetching from the backend API.
+ */
+
 import { FormEvent, useEffect, useState } from "react";
 import WeatherIcon from "@/components/WeatherIcon";
 import WindDisplay from "@/components/WindDisplay";
@@ -15,6 +20,7 @@ import {
 } from "@/lib/api";
 import { formatVisibility } from "@/lib/format";
 
+/** Default city shown on first load before the user searches. */
 const DEFAULT_LOCATION: Location = {
   name: "Charlotte",
   lat: 35.2271,
@@ -23,16 +29,19 @@ const DEFAULT_LOCATION: Location = {
   country: "US",
 };
 
+/** Tab definitions for switching between current conditions and forecast. */
 const TABS: { id: Tab; label: string }[] = [
   { id: "current", label: "Current" },
   { id: "forecast", label: "5-Day Forecast" },
 ];
 
+/** Format a Location as "City, State, Country" for display. */
 function formatLocation(location: Location) {
   const statePart = location.state ? `, ${location.state}` : "";
   return `${location.name}${statePart}, ${location.country}`;
 }
 
+/** Convert OpenWeather unix timestamp to a local time string. */
 function formatTime(unix: number) {
   return new Date(unix * 1000).toLocaleTimeString([], {
     hour: "numeric",
@@ -40,6 +49,7 @@ function formatTime(unix: number) {
   });
 }
 
+/** Format "YYYY-M-D" date keys into a short weekday label (Mon, Tue, …). */
 function formatForecastDay(date: string) {
   const [year, month, day] = date.split("-").map(Number);
   return new Date(year, month - 1, day).toLocaleDateString([], {
@@ -47,6 +57,7 @@ function formatForecastDay(date: string) {
   });
 }
 
+/** Format a forecast interval timestamp for the detailed list view. */
 function formatDateTime(unix: number) {
   return new Date(unix * 1000).toLocaleString([], {
     weekday: "short",
@@ -57,6 +68,10 @@ function formatDateTime(unix: number) {
   });
 }
 
+/**
+ * Collapse 3-hour forecast intervals into daily summaries.
+ * Uses the city's timezone offset so days align with local midnight, not UTC.
+ */
 function rollupDailyForecast(
   forecastIntervals: Forecast["list"],
   cityTimezoneOffsetSeconds = 0,
@@ -84,6 +99,7 @@ function rollupDailyForecast(
 }
 
 export default function Home() {
+  // --- UI state ---
   const [location, setLocation] = useState<Location>(DEFAULT_LOCATION);
   const [tab, setTab] = useState<Tab>("current");
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,6 +109,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Refetch weather whenever the selected location or active tab changes.
   useEffect(() => {
     let cancelled = false;
 
@@ -101,6 +118,7 @@ export default function Home() {
       setError(null);
 
       try {
+        // Only fetch data for the active tab to avoid unnecessary API calls.
         if (tab === "current") {
           const data = await fetchCurrentWeather(location.lat, location.lon);
           if (!cancelled) setCurrent(data);
@@ -119,11 +137,13 @@ export default function Home() {
 
     loadWeather();
 
+    // Cancel in-flight requests if location/tab changes before they finish.
     return () => {
       cancelled = true;
     };
   }, [location, tab]);
 
+  /** Submit city search — populates the results dropdown below the input. */
   async function handleSearch(event: FormEvent) {
     event.preventDefault();
     const query = searchQuery.trim();
@@ -144,6 +164,7 @@ export default function Home() {
     }
   }
 
+  /** Pick a search result — resets cached weather so the effect refetches. */
   function selectLocation(result: Location) {
     setLocation(result);
     setSearchResults([]);
@@ -154,6 +175,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
+      {/* Location header + city search */}
       <header className="space-y-4">
         <h1 className="text-2xl font-semibold">
           Weather for {formatLocation(location)}
@@ -192,6 +214,7 @@ export default function Home() {
         )}
       </header>
 
+      {/* Current vs forecast tab switcher */}
       <nav className="flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
         {TABS.map(({ id, label }) => (
           <button
@@ -217,6 +240,7 @@ export default function Home() {
 
       {loading && <p className="text-sm text-zinc-500">Loading...</p>}
 
+      {/* Current conditions tab */}
       {!loading && tab === "current" && current && (
         <section className="space-y-4">
           <div className="flex items-center gap-4">
@@ -263,6 +287,7 @@ export default function Home() {
         </section>
       )}
 
+      {/* Forecast tab — daily summary cards + 3-hour interval list */}
       {!loading && tab === "forecast" && forecast && (
         <section className="space-y-4">
           <div>

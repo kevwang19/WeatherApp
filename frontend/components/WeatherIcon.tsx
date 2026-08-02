@@ -4,6 +4,11 @@ type WeatherIconProps = {
   className?: string;
 };
 
+/**
+ * Inline SVG weather icons mapped from OpenWeather icon codes.
+ * Code format: two-digit condition + "d" (day) or "n" (night), e.g. "01d".
+ */
+
 const COLORS = {
   sun: "#FACC15",
   moon: "#F8FAFC",
@@ -210,6 +215,7 @@ function MistIcon({ isNight }: { isNight: boolean }) {
   );
 }
 
+/** Map an OpenWeather icon code to the matching SVG composition. */
 function renderIcon(code: string) {
   const type = code.slice(0, 2);
   const isNight = code.endsWith("n");

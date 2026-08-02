@@ -1,5 +1,7 @@
 import { formatWindDirection } from "@/lib/format";
 
+/** Wind speed + compass arrow used on current and forecast views. */
+
 type WindArrowProps = {
   degrees: number;
   size?: number;

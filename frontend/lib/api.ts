@@ -1,3 +1,5 @@
+/** Shared types mirroring the backend/OpenWeather response shapes. */
+
 export interface Location {
   name: string;
   lat: number;
@@ -35,10 +37,10 @@ export interface Forecast {
   }>;
 }
 
+/** Base URL for the NestJS backend — swap for NEXT_PUBLIC_API_URL in production. */
 const API_BASE = "http://localhost:3001";
-// set to env variable at deployment for deployed backends vs local development
 
-
+/** Shared fetch wrapper — throws with the API error message on non-2xx responses. */
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`);
 
@@ -54,14 +56,17 @@ async function get<T>(path: string): Promise<T> {
   return response.json();
 }
 
+/** Search cities by name via GET /geocode. */
 export function searchLocations(query: string) {
   return get<Location[]>(`/geocode?q=${encodeURIComponent(query)}`);
 }
 
+/** Fetch current conditions for coordinates via GET /weather/current. */
 export function fetchCurrentWeather(lat: number, lon: number) {
   return get<CurrentWeather>(`/weather/current?lat=${lat}&lon=${lon}`);
 }
 
+/** Fetch 5-day forecast for coordinates via GET /weather/forecast. */
 export function fetchForecast(lat: number, lon: number) {
   return get<Forecast>(`/weather/forecast?lat=${lat}&lon=${lon}`);
 }

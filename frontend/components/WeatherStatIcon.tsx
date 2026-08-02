@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+/** Small inline SVG icons paired with each weather stat on the current tab. */
+
 export type WeatherStatType =
   | "feels-like"
   | "humidity"
@@ -146,6 +148,7 @@ type WeatherStatProps = {
   children: ReactNode;
 };
 
+/** Stat row — icon + label/value text for the current conditions grid. */
 export function WeatherStat({ type, children }: WeatherStatProps) {
   return (
     <p className="flex items-center gap-2">

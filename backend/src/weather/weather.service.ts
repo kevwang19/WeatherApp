@@ -15,8 +15,10 @@ export interface GeocodeResult {
   state?: string;
 }
 
+/** Proxies geocoding and weather requests to the OpenWeather API. */
 @Injectable()
 export class WeatherService {
+  /** Resolve a city name to coordinates via OpenWeather Geocoding API. */
   async searchLocations(query: string): Promise<GeocodeResult[]> {
     const url = new URL(`${OPENWEATHER_GEO_URL}/direct`);
     url.searchParams.set('q', query);
@@ -31,6 +33,7 @@ export class WeatherService {
       }
 
       const results = await response.json();
+      // Trim the upstream payload to the fields the frontend needs.
       return results.map(({ name, lat, lon, country, state }) => ({
         name,
         lat,
@@ -44,6 +47,7 @@ export class WeatherService {
     }
   }
 
+  /** Fetch current conditions; units default to imperial (°F, mph). */
   async getCurrentWeather(lat: number, lon: number) {
     const url = new URL(`${OPENWEATHER_DATA_URL}/weather`);
     url.searchParams.set('lat', String(lat));
@@ -65,6 +69,7 @@ export class WeatherService {
     }
   }
 
+  /** Fetch 5-day / 3-hour forecast; units default to imperial. */
   async getForecast(lat: number, lon: number) {
     const url = new URL(`${OPENWEATHER_DATA_URL}/forecast`);
     url.searchParams.set('lat', String(lat));
