@@ -68,6 +68,17 @@ No `.env` setup is required for local development — see [Intentional configura
 | `npm run test:e2e`   | End-to-end tests      |
 | `npm run lint`       | Run ESLint            |
 
+## Testing
+
+Tests live in the backend only. No server needs to be running — tests boot their own in-memory app and mock external API calls.
+
+From `backend/`:
+
+```bash
+npm test          # unit tests (src/**/*.spec.ts)
+npm run test:e2e  # e2e tests (test/**/*.e2e-spec.ts)
+```
+
 ## API endpoints
 
 | Method | Path               | Description              |
