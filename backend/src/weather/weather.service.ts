@@ -7,12 +7,40 @@ const DEFAULT_UNITS = 'imperial';
 
 // constants and api keys explicitly included in this file for simplicity... in production the api keys would live as environment variables, the constants can be env vars or hardcoded depending on how often it is used
 
+/** Shapes returned to the frontend (mirrors OpenWeather payloads). */
 export interface GeocodeResult {
   name: string;
   lat: number;
   lon: number;
   country: string;
   state?: string;
+}
+
+export interface CurrentWeather {
+  name: string;
+  main: {
+    temp: number;
+    feels_like: number;
+    humidity: number;
+    temp_min: number;
+    temp_max: number;
+    pressure: number;
+  };
+  weather: Array<{ main: string; description: string; icon: string }>;
+  wind: { speed: number; deg?: number };
+  visibility?: number;
+  sys: { sunrise: number; sunset: number; country: string };
+}
+
+export interface Forecast {
+  city: { name: string; country: string; timezone?: number };
+  list: Array<{
+    dt: number;
+    main: { temp: number; feels_like: number };
+    weather: Array<{ description: string; icon: string }>;
+    pop: number;
+    wind: { speed: number; deg?: number };
+  }>;
 }
 
 interface OpenWeatherGeocodeItem {
@@ -56,7 +84,7 @@ export class WeatherService {
   }
 
   /** Fetch current conditions; units default to imperial (°F, mph). */
-  async getCurrentWeather(lat: number, lon: number): Promise<unknown> {
+  async getCurrentWeather(lat: number, lon: number): Promise<CurrentWeather> {
     const url = new URL(`${OPENWEATHER_DATA_URL}/weather`);
     url.searchParams.set('lat', String(lat));
     url.searchParams.set('lon', String(lon));
@@ -70,8 +98,7 @@ export class WeatherService {
         throw new Error(String(response.status));
       }
 
-      const data: unknown = await response.json();
-      return data;
+      return (await response.json()) as CurrentWeather;
     } catch (error) {
       console.error('OpenWeather request failed', error);
       throw new BadGatewayException('OpenWeather request failed');
@@ -79,7 +106,7 @@ export class WeatherService {
   }
 
   /** Fetch 5-day / 3-hour forecast; units default to imperial. */
-  async getForecast(lat: number, lon: number): Promise<unknown> {
+  async getForecast(lat: number, lon: number): Promise<Forecast> {
     const url = new URL(`${OPENWEATHER_DATA_URL}/forecast`);
     url.searchParams.set('lat', String(lat));
     url.searchParams.set('lon', String(lon));
@@ -93,8 +120,7 @@ export class WeatherService {
         throw new Error(String(response.status));
       }
 
-      const data: unknown = await response.json();
-      return data;
+      return (await response.json()) as Forecast;
     } catch (error) {
       console.error('OpenWeather request failed', error);
       throw new BadGatewayException('OpenWeather request failed');
